@@ -1,0 +1,104 @@
+<script src="simpleTest.js"></script>
+<script>
+  /**
+   * Purpose of isPrototypeOf:
+   * Checks if an object exists in another object's prototype chain. 
+   * 
+   * Signature:
+   * function isPrototypeOf(searchedForObject, objectToSearchIn)
+   * 
+   * Parameters:
+   * searchFor = The object to look for.
+   * searchIn = The object whose prototype chain will be searched.
+   * 
+   * Return: Boolean - true/false 
+   * First argument does or doesn't exist in second arguments prototype chain.
+   * 
+   * Errors: 
+   * TypeError is thrown when first argument is null or undefined.
+   */
+
+function isPrototypeOf(searchFor, searchIn) {
+  // searchFor is the prototype object search for in SearchIn's prototype chain
+  if (searchFor === null || searchFor === undefined) {
+    throw new TypeError('First argument cannot be null or undefined');
+  }
+
+  if (searchIn === null) {
+    return false;
+  }
+
+  if (typeof searchIn === 'object' || typeof searchIn === 'function') {
+    var nextLevelUpSearchInChain = Object.getPrototypeOf(searchIn);
+    if (nextLevelUpSearchInChain === searchFor) {
+      return true;
+    } else {
+      if (nextLevelUpSearchInChain instanceof Object) {
+        return isPrototypeOf(searchFor, nextLevelUpSearchInChain);
+      } else {
+        return false;
+      }  
+    }
+  } 
+
+  return false; 
+  
+}
+// Testing
+var canine = {
+      bark: function() {
+        console.log('bark');
+      }
+    };
+
+    var dog = Object.create(canine);
+    dog.fetch = function() {
+      console.log('fetch');
+    };
+
+    var myDog = Object.create(dog);
+    var empty = Object.create(null);
+
+tests({
+  'It should return true when first-argument object is found in second-argument object\'s prototype chain': function() {
+    eq(isPrototypeOf(dog, myDog), true);
+    eq(isPrototypeOf(canine, myDog), true);
+  },
+  'It should return false when first object is not found in second object\'s prototype chain': function() {    
+    eq(isPrototypeOf(dog, empty), false);
+  },
+  'It should throw a TypeError when first argument is null or undefined': function() {
+    var isTypeError = false;
+     try {
+       isPrototypeOf(null, myDog);
+     } catch(e) {
+       isTypeError = (e instanceof TypeError);
+     }
+     eq(isTypeError, true);
+  },
+  'It should work for any number of prototype links.': function () {
+    eq(isPrototypeOf(canine, myDog), true);
+  },
+  // Chujun's tests for parameter edgecases
+  'It should return false when second argument is null or undefined.': function () {
+    eq(isPrototypeOf(canine, null), false);
+    eq(isPrototypeOf(canine, undefined), false);
+  },
+
+  'It should return true if first argument is any kind of object.': function () {
+    eq(isPrototypeOf(Object.prototype, {}), true);
+    eq(isPrototypeOf(Array.prototype, []), true);
+    eq(isPrototypeOf(Function.prototype, function () {}), true);
+  },
+
+  'It should return false if first argument is the prototype of a primitive data type.': function () {
+    eq(isPrototypeOf(String.prototype, ''), false);
+    eq(isPrototypeOf(Boolean.prototype, true), false);
+    eq(isPrototypeOf(Number.prototype, 1), false);
+    eq(isPrototypeOf(Symbol.prototype, Symbol()), false);
+  },
+});
+
+
+  
+</script>
